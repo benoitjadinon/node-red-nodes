@@ -16,12 +16,16 @@
 
 module.exports = function(RED) {
     "use strict";
+    
+    var DEFAULT_PORT = 49154;
+    
     var Wemo = require('wemo');
 
     function WemoOut(n) {
         RED.nodes.createNode(this,n);
         this.ipaddr = n.ipaddr;
-        this.wemoSwitch = new Wemo(n.ipaddr);
+        this.port = n.port || DEFAULT_PORT;
+        this.wemoSwitch = new Wemo(n.ipaddr,n.port);
         var node = this;
 
         this.on("input", function(msg) {
@@ -38,7 +42,8 @@ module.exports = function(RED) {
     function WemoIn(n) {
         RED.nodes.createNode(this,n);
         this.ipaddr = n.ipaddr;
-        this.wemoSwitch = new Wemo(n.ipaddr);
+        this.port = n.port || DEFAULT_PORT;
+        this.wemoSwitch = new Wemo(n.ipaddr,n.port);
         this.wemoSwitch.state = 0;
         var node = this;
 
@@ -47,7 +52,7 @@ module.exports = function(RED) {
                 if (err) { node.warn(err); }
                 if (parseInt(result) != node.wemoSwitch.state) {
                     node.wemoSwitch.state = parseInt(result);
-                    node.send({payload:node.wemoSwitch.state,topic:"wemo/"+node.ipaddr});
+                    node.send({payload:node.wemoSwitch.state,topic:"wemo/"+node.ipaddr+":"+node.port});
                 }
             });
         }, 2000);
